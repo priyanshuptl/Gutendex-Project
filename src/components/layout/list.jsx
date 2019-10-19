@@ -12,9 +12,11 @@ export default function SimpleList(props) {
 
   return (
     <List component="nav" aria-label="Book Genres">
-      <ListItemLink href="#simple-list">
-        <ListItemText primary="Spam" />
-      </ListItemLink>
+      {items.map(item => (
+        <ListItemLink key={`/books/${item}`} href={`/books/${item}`}>
+          <ListItemText primary={item} />
+        </ListItemLink>
+      ))}
     </List>
   );
 }
