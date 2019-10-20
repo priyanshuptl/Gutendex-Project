@@ -3,19 +3,15 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 
-function ListItemLink(props) {
-  return <ListItem button component="a" {...props} />;
-}
-
 export default function SimpleList(props) {
-  const { items = [] } = props;
+  const { items = [], onSelect } = props;
 
   return (
     <List component="nav" aria-label="Book Genres">
       {items.map(item => (
-        <ListItemLink key={`/books/${item}`} href={`/books/${item}`}>
+        <ListItem button key={`/books/${item}`} onClick={() => onSelect(item)}>
           <ListItemText primary={item} />
-        </ListItemLink>
+        </ListItem>
       ))}
     </List>
   );

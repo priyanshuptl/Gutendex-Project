@@ -12,26 +12,20 @@ import GridItem from "./book-grid-item";
 class BookList extends React.Component {
   state = {
     books: [],
-    next: "",
-    search: {
-      topic: undefined,
-      search: undefined
-    }
+    next: ""
   };
 
   componentDidMount() {
-    const { genre, url, location: searchString, history } = this.props;
+    const {
+      url,
+      location: { search: searchString, pathname }
+    } = this.props;
 
-    const search = {
-      formats: "image/jpeg",
-      topic: genre,
-      ...queryString.parse(searchString)
-    };
-    const query = queryString.stringify(search);
-    history.push(query);
+    const link = `${url}${pathname}?${searchString}`;
 
-    this.getData(`${url}/books?${query}`);
-    debugger;
+    console.log("link", link);
+
+    this.getData(link);
   }
 
   getData = url => {
@@ -50,10 +44,11 @@ class BookList extends React.Component {
 
   render() {
     const { books, next } = this.state;
-
+    const { navigateBack, searchBooks } = this.props;
+    debugger;
     return (
       <React.Fragment>
-        <AppBar />
+        <AppBar navigateBack={() => navigateBack("/")} search={searchBooks} />
         <InfiniteScroll
           next={() => this.getData(next)}
           hasMore={!!books.length && !!next}
@@ -80,7 +75,7 @@ class BookList extends React.Component {
 }
 
 BookList.propTypes = {
-  genres: PropTypes.arrayOf(PropTypes.string)
+  url: PropTypes.string
 };
 
 export default withRouter(BookList);

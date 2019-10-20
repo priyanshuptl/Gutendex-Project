@@ -2,10 +2,10 @@ import React from "react";
 import PropTypes from "prop-types";
 import List from "../layout/list";
 
-const HomePage = ({ genres=[] }) => (
+const HomePage = ({ genres = [], setGenre }) => (
   <React.Fragment>
     <h4>Select a book Genre</h4>
-    <List items={genres} />
+    <List items={genres} onSelect={setGenre} />
   </React.Fragment>
 );
 
