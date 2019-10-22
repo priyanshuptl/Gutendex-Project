@@ -30,10 +30,6 @@ class App extends React.Component {
 
     const query = queryString.stringify(searchObj);
 
-    const link = `${url}/books?${query}`;
-
-    console.log("link", link);
-
     history.push(`/books?${query}`);
   };
 
