@@ -24,7 +24,7 @@ class App extends React.Component {
     const searchObj = {
       ...queryString.parse(searchString),
       topic: genre,
-      formats: "image/jpeg"
+      mime_type: "image/jpeg"
     };
 
     const query = queryString.stringify(searchObj);
