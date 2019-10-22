@@ -1,14 +1,3 @@
-.book-cover {
-  height: 200px;
-  width: 160px;
-}
-
-.book-list {
-  padding: 15px;
-  width: 100% !important;
-  box-sizing: border-box;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -33,8 +22,4 @@
 
 .list-item:hover {
   background-color: rgb(2, 2, 216) !important;
-}
-
-.books-grid-item-title {
-  cursor: pointer;
 }
