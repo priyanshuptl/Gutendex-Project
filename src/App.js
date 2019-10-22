@@ -3,11 +3,9 @@ import queryString from "query-string";
 import { Route, withRouter } from "react-router-dom";
 import HomePage from "./components/handler/home-page";
 import BookList from "./components/handler/book-list";
-import { Genres } from "./components/enums";
+import { Genres, URL } from "./components/enums";
 import "typeface-roboto";
 import "./App.css";
-
-const url = "http://skunkworks.ignitesol.com:8000";
 
 class App extends React.Component {
   state = {
@@ -35,7 +33,7 @@ class App extends React.Component {
   render() {
     const { genres } = this.state;
 
-    const bookList = () => <BookList url={url} />;
+    const bookList = () => <BookList url={URL} />;
     const homePage = () => (
       <HomePage genres={genres} setGenre={this.setGenreHandler} />
     );
