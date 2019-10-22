@@ -1,0 +1,25 @@
+* {
+  box-sizing: border-box;
+}
+
+.home-page {
+  width: 100vw;
+  height: 100vh;
+  background-color: rgb(79, 79, 255);
+  text-align: center;
+  color: white;
+}
+
+.home-page-title {
+  padding: 50px;
+}
+
+.list-item {
+  margin: 10px !important;
+  width: 94% !important;
+  background-color: rgb(30, 30, 253) !important;
+}
+
+.list-item:hover {
+  background-color: rgb(2, 2, 216) !important;
+}
