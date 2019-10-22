@@ -1,38 +1,11 @@
 import React from "react";
-import PropTypes from "prop-types";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import useScrollTrigger from "@material-ui/core/useScrollTrigger";
-import Slide from "@material-ui/core/Slide";
 import InputBase from "@material-ui/core/InputBase";
 import { fade, makeStyles } from "@material-ui/core/styles";
 import SearchIcon from "@material-ui/icons/Search";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-
-function HideOnScroll(props) {
-  const { children, window } = props;
-  // Note that you normally won't need to set the window ref as useScrollTrigger
-  // will default to window.
-  // This is only being set here because the demo is in an iframe.
-  const trigger = useScrollTrigger({ target: window ? window() : undefined });
-
-  return (
-    <Slide appear={false} direction="down" in={!trigger}>
-      {children}
-    </Slide>
-  );
-}
-
-HideOnScroll.propTypes = {
-  children: PropTypes.element.isRequired,
-  /**
-   * Injected by the documentation to work in an iframe.
-   * You won't need it on your project.
-   */
-  window: PropTypes.func
-};
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -76,65 +49,47 @@ const useStyles = makeStyles(theme => ({
     transition: theme.transitions.create("width"),
     width: "100%",
     [theme.breakpoints.up("sm")]: {
-      width: 120,
+      width: 200,
       "&:focus": {
-        width: 200
+        width: 280
       }
     }
   }
 }));
 
-class HideAppBar extends React.Component {
-  state = {
-    searchText: ""
-  };
+export default function(props) {
+  const classes = useStyles();
+  const { navigateBack, searchText, onChange, onEnter } = props;
 
-  onSearch = event => {
-    if (event.keyCode === 13) {
-      const { search } = this.props;
-      search(this.state.searchText);
-    } else {
-      this.setState({ searchText: event.target.value });
-    }
-  };
-
-  render() {
-    const classes = useStyles();
-    const { navigateBack } = this.props;
-    const { searchText } = this.state;
-
-    return (
-      <React.Fragment>
-        <CssBaseline />
-        <HideOnScroll {...this.props}>
-          <AppBar>
-            <Toolbar>
-              <ArrowBackIcon button onClick={navigateBack} />
-              <Typography className={classes.title} variant="h6" noWrap>
-                Gutendex App
-              </Typography>
-              <div className={classes.search}>
-                <div className={classes.searchIcon}>
-                  <SearchIcon />
-                </div>
-                <InputBase
-                  placeholder="Search Books…"
-                  classes={{
-                    root: classes.inputRoot,
-                    input: classes.inputInput
-                  }}
-                  onChange={this.onSearch}
-                  value={searchText}
-                  inputProps={{ "aria-label": "search" }}
-                />
-              </div>
-            </Toolbar>
-          </AppBar>
-        </HideOnScroll>
-        <Toolbar />
-      </React.Fragment>
-    );
-  }
+  return (
+    <AppBar position="static">
+      <Toolbar>
+        <ArrowBackIcon onClick={navigateBack} />
+        <Typography className={classes.title} variant="h6" noWrap>
+          Gutendex App
+        </Typography>
+        <div className={classes.search}>
+          <div className={classes.searchIcon}>
+            <SearchIcon />
+          </div>
+          <InputBase
+            placeholder="Search Books…"
+            classes={{
+              root: classes.inputRoot,
+              input: classes.inputInput
+            }}
+            onChange={onChange}
+            value={searchText}
+            inputProps={{ "aria-label": "search" }}
+            onKeyUp={event => {
+              if (event.keyCode === 13) {
+                event.preventDefault();
+                onEnter();
+              }
+            }}
+          />
+        </div>
+      </Toolbar>
+    </AppBar>
+  );
 }
-
-export default HideAppBar;
