@@ -1,24 +1,19 @@
 import React from "react";
 import queryString from "query-string";
 import { Route, withRouter } from "react-router-dom";
+import { Typography } from "@material-ui/core";
 import HomePage from "./components/handler/home-page";
 import BookList from "./components/handler/book-list";
+import { Genres } from "./components/enums";
 import "typeface-roboto";
 import "./App.css";
 
 const url = "http://skunkworks.ignitesol.com:8000";
-const genres = [
-  "Fiction",
-  "Drama",
-  "Humor",
-  "Politics",
-  "History",
-  "Adventure"
-];
 
 class App extends React.Component {
   state = {
-    genres,
+    genres: Genres,
+    booksLoadingStarted: false
   };
 
   setGenreHandler = genre => {
@@ -33,43 +28,26 @@ class App extends React.Component {
       formats: "image/jpeg"
     };
 
-    history.push(`/books?${queryString.stringify(searchObj)}`);
-  };
+    const query = queryString.stringify(searchObj);
 
-  searchBooksHandler = name => {
-    const {
-      history,
-      location: { search: searchString, pathname }
-    } = this.props;
+    const link = `${url}/books?${query}`;
 
-    const searchObj = {
-      ...queryString.parse(searchString),
-      search: name
-    };
+    console.log("link", link);
 
-    history.push(`${pathname}?${queryString.stringify(searchObj)}`);
-  };
-
-  navigateBackHandler = path => {
-    const { history } = this.props;
-    history.push(path);
+    history.push(`/books?${query}`);
   };
 
   render() {
-    const { genres } = this.state;
+    const { genres, errorMessage } = this.state;
 
-    const bookList = () => (
-      <BookList
-        url={url}
-        navigateBack={this.navigateBackHandler}
-        searchBooks={this.searchBooksHandler}
-      />
-    );
+    const bookList = () => <BookList url={url} />;
     const homePage = () => (
       <HomePage genres={genres} setGenre={this.setGenreHandler} />
     );
 
-    return (
+    return errorMessage ? (
+      <Typography color="error">{errorMessage}</Typography>
+    ) : (
       <React.Fragment>
         <Route exact path="/" component={homePage} />
         <Route path="/books" component={bookList} />

@@ -1,75 +1,165 @@
-import React from "react";
+import React, { Component } from "react";
 import PropTypes from "prop-types";
 import queryString from "query-string";
+import debounce from "lodash.debounce";
+import Axios from "axios";
 import { withRouter } from "react-router-dom";
-import axios from "axios";
 import { Grid } from "@material-ui/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import InfiniteScroll from "react-infinite-scroll-component";
-import AppBar from "../layout/app-bar";
 import GridItem from "./book-grid-item";
+import AppBar from "../layout/app-bar";
+import { BookFormatLevel } from "../enums";
 
-class BookList extends React.Component {
-  state = {
-    books: [],
-    next: ""
-  };
+class BookList extends Component {
+  constructor(props) {
+    super(props);
 
-  componentDidMount() {
+    // Sets up our initial state
+    this.state = {
+      error: false,
+      hasMore: true,
+      isLoading: false,
+      books: [],
+      next: "",
+      searchText: ""
+    };
+
+    window.onscroll = debounce(() => {
+      const {
+        loadBooks,
+        state: { error, isLoading, hasMore, next }
+      } = this;
+
+      if (error || isLoading || !hasMore) return;
+
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight
+      ) {
+        loadBooks(next);
+      }
+    }, 100);
+  }
+
+  componentWillMount() {
     const {
       url,
       location: { search: searchString, pathname }
     } = this.props;
 
-    const link = `${url}${pathname}?${searchString}`;
+    const searchText = queryString.parse(searchString).search;
+    console.log("searchText", searchText);
+    this.setState({ searchText });
 
+    const link = `${url}${pathname}${searchString}`;
     console.log("link", link);
-
-    this.getData(link);
+    this.loadBooks(link);
   }
 
-  getData = url => {
-    axios.get(url).then(response => {
-      console.log("response", response);
-      const { results, next } = response.data;
+  loadBooks = link => {
+    this.setState({ isLoading: true }, () => {
+      Axios.get(link)
+        .then(response => {
+          console.log("response", response);
+          const { results, next } = response.data;
 
-      const books = results.filter(({ formats }) => !!formats["image/jpeg"]);
+          const books = results.filter(
+            ({ formats }) => !!formats["image/jpeg"]
+          );
 
-      this.setState({
-        books: [...this.state.books, ...books],
-        next
-      });
+          if (next && books.length + this.state.books.length <= 6) {
+            this.loadBooks(next);
+          }
+
+          this.setState({
+            books: [...this.state.books, ...books],
+            next,
+            hasMore: !!next,
+            isLoading: false
+          });
+        })
+        .catch(err => {
+          this.setState({
+            error: err.message,
+            isLoading: false
+          });
+        });
     });
   };
 
+  setSearchTextHandler = event => {
+    const name = event.target.value;
+    event.preventDefault();
+    this.setState({ searchText: name });
+  };
+
+  onSearchHandler = () => {
+    const {
+      history,
+      location: { search: searchString, pathname }
+    } = this.props;
+
+    const searchObj = {
+      ...queryString.parse(searchString),
+      search: this.state.searchText
+    };
+
+    history.push(`${pathname}?${queryString.stringify(searchObj)}`);
+  };
+
+  navigateBackHandler = path => {
+    const { history } = this.props;
+    history.push(path);
+  };
+
+  onClickGridItem = ({ formats, title }) => {
+    let found = false;
+    console.log("Clicked!", title);
+    BookFormatLevel.forEach(format => {
+      const formatLink = Object.keys(formats).find(bookFormat => {
+        console.log("format", format);
+        return bookFormat.includes(format);
+      });
+      console.log("formatLink", formatLink);
+      if (formatLink) {
+        window.location.replace(formats[formatLink]);
+        console.log("formats[formatLink]", formats[formatLink]);
+        found = true;
+      }
+    });
+    if (!found) {
+      this.setState({ errorMessage: "No viewable version available" });
+    }
+  };
+
   render() {
-    const { books, next } = this.state;
-    const { navigateBack, searchBooks } = this.props;
-    debugger;
+    const { error, hasMore, isLoading, books, searchText } = this.state;
+
     return (
-      <React.Fragment>
-        <AppBar navigateBack={() => navigateBack("/")} search={searchBooks} />
-        <InfiniteScroll
-          next={() => this.getData(next)}
-          hasMore={!!books.length && !!next}
-          loader={
-            <div style={{ textAlign: "center" }}>
-              <CircularProgress />
-            </div>
-          }
-          endMessage={
-            <p style={{ textAlign: "center" }}>
-              <b>Yay! You have seen it all</b>
-            </p>
-          }
-        >
-          <Grid className="book-list" container spacing={3}>
-            {books.map(book => (
-              <GridItem book={book} key={"book:" + book.title} />
-            ))}
-          </Grid>
-        </InfiniteScroll>
-      </React.Fragment>
+      <div>
+        <AppBar
+          navigateBack={() => this.navigateBackHandler("/")}
+          onChange={this.setSearchTextHandler}
+          onEnter={this.onSearchHandler}
+          searchText={searchText}
+        />
+        <Grid className="book-list" container spacing={3}>
+          {books.map(book => (
+            <GridItem
+              book={book}
+              key={"book:" + book.title}
+              onClickGridItem={() => this.onClickGridItem(book)}
+            />
+          ))}
+        </Grid>
+        {error && <div style={{ color: "#900" }}>{error}</div>}
+        {isLoading && (
+          <div style={{ textAlign: "center" }}>
+            <CircularProgress />
+          </div>
+        )}
+        {!hasMore && <div>All the books have been loaded!</div>}
+      </div>
     );
   }
 }
