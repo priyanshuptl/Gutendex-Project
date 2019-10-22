@@ -8,9 +8,6 @@ import SearchIcon from "@material-ui/icons/Search";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 
 const useStyles = makeStyles(theme => ({
-  root: {
-    flexGrow: 1
-  },
   title: {
     flexGrow: 1,
     marginLeft: theme.spacing(1),
