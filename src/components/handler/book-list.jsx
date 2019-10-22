@@ -7,17 +7,18 @@ import { withRouter } from "react-router-dom";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import AppBar from "../layout/app-bar";
 import GridList from "../layout/grid-list";
+import Snackbar from "../layout/snackbar";
 import { BookFormatLevel } from "../enums";
 
 class BookList extends Component {
   constructor(props) {
     super(props);
 
-    // Sets up our initial state
     this.state = {
       error: false,
       hasMore: true,
       isLoading: false,
+      showSnackBar: false,
       books: [],
       next: "",
       searchText: "",
@@ -48,11 +49,9 @@ class BookList extends Component {
     } = this.props;
 
     const { search: searchText, topic } = queryString.parse(searchString);
-    console.log("searchText", searchText);
     this.setState({ searchText, topic });
 
     const link = `${url}${pathname}${searchString}`;
-    console.log("link", link);
     this.loadBooks(link);
   }
 
@@ -60,7 +59,6 @@ class BookList extends Component {
     this.setState({ isLoading: true }, () => {
       Axios.get(link)
         .then(response => {
-          console.log("response", response);
           const { results, next } = response.data;
 
           const books = results
@@ -120,29 +118,47 @@ class BookList extends Component {
 
   onClickGridItem = ({ formats, title }) => {
     let found = false;
-    console.log("Clicked!", title);
     BookFormatLevel.forEach(format => {
       const formatLink = Object.keys(formats).find(bookFormat => {
-        console.log("format", format);
         return bookFormat.includes(format);
       });
-      console.log("formatLink", formatLink);
       if (formatLink) {
         window.location.replace(formats[formatLink]);
-        console.log("formats[formatLink]", formats[formatLink]);
         found = true;
       }
     });
     if (!found) {
-      this.setState({ errorMessage: "No viewable version available" });
+      this.setState({ showSnackBar: true });
     }
   };
 
+  handleSnackBarClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    this.setState({ showSnackBar: false });
+  };
+
   render() {
-    const { error, hasMore, isLoading, books, searchText, topic } = this.state;
+    const {
+      error,
+      hasMore,
+      isLoading,
+      books,
+      searchText,
+      topic,
+      showSnackBar
+    } = this.state;
 
     return (
       <div>
+        <Snackbar
+          variant="error"
+          message="No​ ​viewable​ ​version​ ​available"
+          open={showSnackBar}
+          handleClose={this.handleSnackBarClose}
+        />
         <AppBar
           navigateBack={() => this.navigateBackHandler("/")}
           onChange={this.setSearchTextHandler}
