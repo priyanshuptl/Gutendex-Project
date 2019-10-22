@@ -17,6 +17,9 @@ const useStyles = makeStyles(theme => ({
     width: "100%",
     height: "100%"
   },
+  gridListItem: {
+    cursor: "pointer"
+  }
 }));
 
 const getColLength = () => {
@@ -61,7 +64,11 @@ export default function TitlebarGridList({
           </GridListTile>
         )}
         {tileData.map(tile => (
-          <GridListTile key={tile.title} onClick={() => onClickGridItem(tile)}>
+          <GridListTile
+            className={classes.gridListItem}
+            key={tile.title}
+            onClick={() => onClickGridItem(tile)}
+          >
             <img src={tile.img} alt={tile.title} />
             <GridListTileBar
               title={tile.title}
