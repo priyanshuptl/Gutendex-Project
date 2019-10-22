@@ -4,10 +4,9 @@ import queryString from "query-string";
 import debounce from "lodash.debounce";
 import Axios from "axios";
 import { withRouter } from "react-router-dom";
-import { Grid } from "@material-ui/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import GridItem from "./book-grid-item";
 import AppBar from "../layout/app-bar";
+import GridList from "../layout/grid-list";
 import { BookFormatLevel } from "../enums";
 
 class BookList extends Component {
@@ -21,7 +20,8 @@ class BookList extends Component {
       isLoading: false,
       books: [],
       next: "",
-      searchText: ""
+      searchText: "",
+      topic: ""
     };
 
     window.onscroll = debounce(() => {
@@ -47,9 +47,9 @@ class BookList extends Component {
       location: { search: searchString, pathname }
     } = this.props;
 
-    const searchText = queryString.parse(searchString).search;
+    const { search: searchText, topic } = queryString.parse(searchString);
     console.log("searchText", searchText);
-    this.setState({ searchText });
+    this.setState({ searchText, topic });
 
     const link = `${url}${pathname}${searchString}`;
     console.log("link", link);
@@ -63,11 +63,17 @@ class BookList extends Component {
           console.log("response", response);
           const { results, next } = response.data;
 
-          const books = results.filter(
-            ({ formats }) => !!formats["image/jpeg"]
-          );
+          const books = results
+            .filter(({ formats }) => !!formats["image/jpeg"])
+            .map(({ id, formats, title, authors }) => ({
+              id,
+              img: formats["image/jpeg"],
+              formats,
+              title,
+              author: authors[0] && authors[0].name
+            }));
 
-          if (next && books.length + this.state.books.length <= 6) {
+          if (next && books.length + this.state.books.length <= 30) {
             this.loadBooks(next);
           }
 
@@ -133,7 +139,7 @@ class BookList extends Component {
   };
 
   render() {
-    const { error, hasMore, isLoading, books, searchText } = this.state;
+    const { error, hasMore, isLoading, books, searchText, topic } = this.state;
 
     return (
       <div>
@@ -143,15 +149,11 @@ class BookList extends Component {
           onEnter={this.onSearchHandler}
           searchText={searchText}
         />
-        <Grid className="book-list" container spacing={3}>
-          {books.map(book => (
-            <GridItem
-              book={book}
-              key={"book:" + book.title}
-              onClickGridItem={() => this.onClickGridItem(book)}
-            />
-          ))}
-        </Grid>
+        <GridList
+          tileData={books}
+          subHeader={topic}
+          onClickGridItem={this.onClickGridItem}
+        ></GridList>
         {error && <div style={{ color: "#900" }}>{error}</div>}
         {isLoading && (
           <div style={{ textAlign: "center" }}>

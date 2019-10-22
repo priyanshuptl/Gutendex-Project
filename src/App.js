@@ -1,7 +1,6 @@
 import React from "react";
 import queryString from "query-string";
 import { Route, withRouter } from "react-router-dom";
-import { Typography } from "@material-ui/core";
 import HomePage from "./components/handler/home-page";
 import BookList from "./components/handler/book-list";
 import { Genres } from "./components/enums";
@@ -34,16 +33,14 @@ class App extends React.Component {
   };
 
   render() {
-    const { genres, errorMessage } = this.state;
+    const { genres } = this.state;
 
     const bookList = () => <BookList url={url} />;
     const homePage = () => (
       <HomePage genres={genres} setGenre={this.setGenreHandler} />
     );
 
-    return errorMessage ? (
-      <Typography color="error">{errorMessage}</Typography>
-    ) : (
+    return (
       <React.Fragment>
         <Route exact path="/" component={homePage} />
         <Route path="/books" component={bookList} />
